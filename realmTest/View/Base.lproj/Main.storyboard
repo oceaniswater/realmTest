@@ -39,7 +39,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <segue destination="hr0-wM-TpX" kind="show" identifier="goToItemsSegue" id="4Yc-7N-PLB"/>
+                        <segue destination="hr0-wM-TpX" kind="show" identifier="goToItemsSegue" id="co2-s7-RhD"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ysa-Ky-G3W" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
