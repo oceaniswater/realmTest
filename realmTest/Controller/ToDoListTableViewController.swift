@@ -7,15 +7,16 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
-class ToDoListTableViewController: UITableViewController {
+class ToDoListTableViewController: SwipeTableViewController {
     
     var items: Results<Item>?
     let realm = try! Realm()
     
     // search bar
     var searchController = UISearchController()
-
+    
     var containsTitlePredicate = "title CONTAINS[cd] %@"
     
     var selectedCategory: Category? {
@@ -24,11 +25,8 @@ class ToDoListTableViewController: UITableViewController {
         }
     }
     
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         
         // UISearchController set up
         searchController = UISearchController(searchResultsController: nil)
@@ -40,43 +38,17 @@ class ToDoListTableViewController: UITableViewController {
     
     // MARK: - Add new Item
     @IBAction func addButtonTapped(_ sender: UIBarButtonItem) {
-        
-        // created controller
-        let ac = UIAlertController(title: "Add Item to your to do list", message: nil, preferredStyle: .alert)
-        // added TextField
-        ac.addTextField()
-        ac.textFields?[0].placeholder = "Create new Item"
-        
-        
-        // created action button
-        let addAction = UIAlertAction(title: "Add Item", style: .default) {
-            // trying to avoid strong reference
-            [weak self, weak ac] action in
-            // checked textField is not nil
-            guard let item = ac?.textFields?[0].text, item != "" else { return }
-            // use button Submit using answer and method out of closure
-            self?.submit(item)
+        alertAddEntity(title: "Add new item") { [self] item in
+            let newItem = Item()
+            newItem.title = item
+            save(item: newItem)
+
+            self.tableView.reloadData()
         }
         
-        ac.addAction(addAction)
-        present(ac, animated: true)
     }
     
-    //     added submit function for action controller
-    func submit(_ item: String) {
-        
-        let newItem = Item()
-        newItem.title = item
-        save(item: newItem)
-        
-        // update one row
-        let indexPath = IndexPath(row: 0, section: 0)
-        self.tableView.insertRows(at: [indexPath], with: .automatic)
-        return
-    }
-    
-    
-            // MARK: - CRUD for Realm
+    // MARK: - CRUD for Realm
     
     func save(item: Item) {
         
@@ -98,13 +70,37 @@ class ToDoListTableViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    //        func deleteData(with indexPath: IndexPath) {
-    //
-    //            context.delete(items[indexPath.row])
-    //            items.remove(at: indexPath.row)
-    //
-    //
-    //        }
+    // I created this function in SwipeTableViewController (superclass) for deleting category
+    override func updateModel(at indexPath: IndexPath) {
+        if let item = items?[indexPath.row] {
+            do {
+                try realm.write({
+                    realm.delete(item)
+                })
+            } catch {
+                print("error updating done status \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    
+    // I created this function in SwipeTableViewController (superclass) for changing category name
+    // I also create extension for UITableView for alerts
+    override func updateName(at indexPath: IndexPath) {
+        let oldName = items?[indexPath.row].title ?? ""
+        alertUpdateName(indexPath: indexPath, title: "Update item name", oldName: oldName) {[weak self] newName in
+            if let item = self?.items?[indexPath.row] {
+                do {
+                    try self?.realm.write({
+                        item.title = newName
+                    })
+                } catch {
+                    print("error updating title \(error.localizedDescription)")
+                }
+                self?.tableView.reloadData()
+            }
+        }
+    }
     
     // MARK: - Table view data source and delegate
     
@@ -120,13 +116,20 @@ class ToDoListTableViewController: UITableViewController {
     
     // setup cell
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         var content = cell.defaultContentConfiguration()
         content.image = UIImage(systemName: "applelogo")
         if let item = items?[indexPath.row] {
             content.text = item.title
             cell.accessoryType = item.done ? .checkmark : .none
+            
+            if let color = UIColor(hexString: selectedCategory!.color)?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(items!.count)) {
+                cell.backgroundColor = color
+                content.textProperties.color = ContrastColorOf(color, returnFlat: true)
+            }
+            
+            
         } else {
             content.text = "No added items"
         }
@@ -150,23 +153,9 @@ class ToDoListTableViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
         
     }
-    
-    // add delete cell functional
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            if let item = items?[indexPath.row] {
-                do {
-                    try realm.write({
-                        realm.delete(item)
-                    })
-                } catch {
-                    print("error updating done status \(error.localizedDescription)")
-                }
-            }
-            tableView.deleteRows(at: [indexPath], with: .bottom)
-        }
-    }
 }
+
+
 
 // MARK: - UISearchBarDelegate
 

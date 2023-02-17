@@ -19,12 +19,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         
         let config = Realm.Configuration(
-            schemaVersion: 1, // Set the new schema version.
+            schemaVersion: 2, // Set the new schema version.
             migrationBlock: { migration, oldSchemaVersion in
-                if oldSchemaVersion < 1 {
-                    migration.enumerateObjects(ofType: Item.className()) { oldObject, newObject in
+                if oldSchemaVersion < 2 {
+                    migration.enumerateObjects(ofType: Category.className()) { oldObject, newObject in
                         // Add the new "dateCreated" property and set it to the current date.
-                        newObject!["dateCreated"] = Date()
+                        newObject!["color"] = UIColor.randomFlat().hexValue()
                     }
                 }
             })
