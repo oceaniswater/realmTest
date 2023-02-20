@@ -14,7 +14,6 @@ class ToDoListTableViewController: SwipeTableViewController {
     var items: Results<Item>?
     let realm = try! Realm()
     
-    // search bar
     var searchController = UISearchController()
     
     var containsTitlePredicate = "title CONTAINS[cd] %@"
@@ -22,6 +21,35 @@ class ToDoListTableViewController: SwipeTableViewController {
     var selectedCategory: Category? {
         didSet {
             loadItems()
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if let hexColor = selectedCategory?.color {
+            
+            title = selectedCategory!.name
+            
+            guard let navBar = navigationController?.navigationBar else { return }
+            
+            navBar.tintColor = ContrastColorOf(UIColor(hexString: hexColor)!, returnFlat: true)
+            
+            
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = UIColor(hexString: hexColor)
+            appearance.titleTextAttributes = [.foregroundColor: ContrastColorOf(UIColor(hexString: hexColor)!, returnFlat: true)]
+            appearance.largeTitleTextAttributes = [.foregroundColor: ContrastColorOf(UIColor(hexString: hexColor)!, returnFlat: true)]
+            
+            navBar.standardAppearance = appearance
+            navBar.scrollEdgeAppearance = appearance
+            searchController.searchBar.barTintColor = UIColor(hexString: hexColor)
+            if let placeholder = searchController.searchBar.placeholder {
+                let attributedPlaceholder = NSAttributedString(string: placeholder, attributes: [NSAttributedString.Key.foregroundColor: ContrastColorOf(UIColor(hexString: hexColor)!, returnFlat: true)])
+                searchController.searchBar.searchTextField.attributedPlaceholder = attributedPlaceholder
+                searchController.searchBar.setImage(UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .regular))!.withTintColor(ContrastColorOf(UIColor(hexString: hexColor)!, returnFlat: true), renderingMode: .alwaysOriginal), for: .search, state: .normal)
+            }
         }
     }
     
@@ -42,7 +70,7 @@ class ToDoListTableViewController: SwipeTableViewController {
             let newItem = Item()
             newItem.title = item
             save(item: newItem)
-
+            
             self.tableView.reloadData()
         }
         

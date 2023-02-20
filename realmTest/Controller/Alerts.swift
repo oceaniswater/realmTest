@@ -9,6 +9,8 @@ import UIKit
 
 extension UITableViewController {
     
+    // MARK: - Update name alert
+    
     func alertUpdateName(indexPath: IndexPath, title: String, oldName: String, completionHandler: @escaping (String) -> Void) {
         // created controller
         let ac = UIAlertController(title: title, message: nil, preferredStyle: .alert)
@@ -38,6 +40,8 @@ extension UITableViewController {
         ac.addAction(cancelAction)
         present(ac, animated: true)
     }
+    
+    // MARK: - Add entity alert
     
     func alertAddEntity(title: String, completionHandler: @escaping (String) -> Void) {
         let ac = UIAlertController(title: title, message: nil, preferredStyle: .alert)

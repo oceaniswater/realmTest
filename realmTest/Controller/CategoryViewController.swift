@@ -16,15 +16,31 @@ class CategoryViewController: SwipeTableViewController {
     
     var categories: Results<Category>?
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // this block for set up navigation bar
+        guard let navBar = navigationController?.navigationBar else { return }
+        
+        navBar.tintColor = UIColor.white
+        
+        
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor.blue
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        
+        navBar.standardAppearance = appearance
+        navBar.scrollEdgeAppearance = appearance
+        navigationItem.backButtonTitle = "Category"
+        title = "ToDoList"
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        loadCategories()
         
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        self.navigationController?.navigationBar.tintColor = .black
-        self.navigationController?.navigationBar.barTintColor = .purple
-        self.navigationItem.backButtonTitle = "Category"
+        loadCategories()
         
     }
     
@@ -108,6 +124,10 @@ class CategoryViewController: SwipeTableViewController {
         var content = cell.defaultContentConfiguration()
         content.image = UIImage(systemName: "puzzlepiece.fill")
         content.text = categories?[indexPath.row].name ?? "No category added"
+        if let color = UIColor(hexString: (categories?[indexPath.row].color)!) {
+            cell.backgroundColor = color
+            content.textProperties.color = ContrastColorOf(color, returnFlat: true)
+        }
         cell.backgroundColor = UIColor(hexString: categories?[indexPath.row].color ?? UIColor.randomFlat().hexValue())
         cell.contentConfiguration = content
         
